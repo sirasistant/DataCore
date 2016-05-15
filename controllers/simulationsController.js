@@ -41,15 +41,18 @@ exports.list = function(req,res){
     };
 
     if(req.query.templates){
+        console.log("Simulation templates request");
         Simulation.find({ isTemplate: true }).exec(function(err,docs){
             sendList(docs);
         });
     }else{
         if(req.query.creator){
+            console.log("Simulation by creator request");
             Simulation.find({ creator: req.query.creator }).exec(function(err,docs){
                 sendList(docs);
             });
         }else{
+            console.log("List simulation request");
             Simulation.find({}).exec(function(err,docs){
                 sendList(docs);
             });
@@ -58,6 +61,7 @@ exports.list = function(req,res){
 };
 
 exports.create = function (req, res) {
+    console.log("Create simulation request");
     var simulation = new Simulation(req.body);
     async.forEachOf(req.body.Circunscriptions, function(circumscription,index, callback) {
         //For each circumscription, save the localization
@@ -92,6 +96,7 @@ exports.create = function (req, res) {
 };
 
 exports.delete = function (req, res) {
+    console.log("Delete simulation request");
     var id = req.params.id;
     if (check.string(id)) {
         Simulation.find({_id: id}, function (err, simulations) {
@@ -113,6 +118,7 @@ exports.delete = function (req, res) {
 };
 
 exports.get = function (req, res) {
+    console.log("Get simulation request");
     var id = req.params.id;
     if (check.string(id)) {
         Simulation.find({_id: id}, function (err, simulations) {
@@ -139,6 +145,7 @@ exports.get = function (req, res) {
 };
 
 exports.update = function (req,res) {
+    console.log("Update simulation request");
     var id = req.params.id;
 
     async.forEachOf(req.body.Circunscriptions, function(circumscription,index, callback) {
