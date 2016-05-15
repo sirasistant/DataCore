@@ -24,7 +24,10 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: false }));
 app.use(methodOverride('_method'));
 
 var simulations = require('./routes/simulations');
+var reports = require('./routes/reports');
 app.use('/api/simulations', simulations);
+app.use('/api/reports', reports);
+
 
 mongoose.connect('mongodb://localhost/datacore');
 
