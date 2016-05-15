@@ -26,7 +26,7 @@ app.use(methodOverride('_method'));
 var simulations = require('./routes/simulations');
 app.use('/api/simulations', simulations);
 
-mongoose.connect('mongodb://localhost/electolab');
+mongoose.connect('mongodb://localhost/datacore');
 
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));

@@ -3,6 +3,60 @@ var check = require('check-types'),
     fs = require("fs"), async = require("async"),
     moment = require('moment'), crypto = require('crypto');
 
+var insertLocalizations = function(simulation,finalCallback){
+    async.each(simulation.Circunscriptions,function(circunscription,callback){
+        if(circunscription.localizationPath){
+            fs.readFile(circunscription.localizationPath,'utf8',function(err,data){
+                if(err){
+                    callback(err);
+                }else{
+                    circunscription.localization = data;
+                    callback();
+                }
+            });
+        }else{
+            callback();
+        }
+    },function(err){
+        finalCallback(err);
+    });
+};
+
+
+exports.list = function(req,res){
+    var sendList = function(simulationDocs){
+        var simulations = [];
+        for(var i = 0;i<simulationDocs.length;i++){
+            var simulation = simulationDocs[i].toObject();
+            simulation.id = simulation._id;
+            simulations.push(simulation);
+        }
+        async.each(simulations,insertLocalizations,function(err){
+            if(err){
+                res.status(500).send(err);
+            }else{
+                res.status(200).json(simulations);
+            }
+        });
+    };
+
+    if(req.query.templates){
+        Simulation.find({ isTemplate: true }).exec(function(err,docs){
+            sendList(docs);
+        });
+    }else{
+        if(req.query.creator){
+            Simulation.find({ creator: req.query.creator }).exec(function(err,docs){
+                sendList(docs);
+            });
+        }else{
+            Simulation.find({}).exec(function(err,docs){
+                sendList(docs);
+            });
+        }
+    }
+};
+
 exports.create = function (req, res) {
     var simulation = new Simulation(req.body);
     async.forEachOf(req.body.Circunscriptions, function(circumscription,index, callback) {
@@ -58,29 +112,13 @@ exports.delete = function (req, res) {
     }
 };
 
-var insertLocalizations = function(simulation,finalCallback){
-    async.each(simulation.Circunscriptions,function(circunscription,callback){
-        if(circunscription.localizationPath){
-            fs.readFile(circunscription.localizationPath,'utf8',function(err,data){
-                if(err){
-                    callback(err);
-                }else{
-                    circunscription.localization = data;
-                    callback();
-                }
-            });
-        }else{
-            callback();
-        }
-    },function(err){
-        finalCallback(err);
-    });
-};
-
 exports.get = function (req, res) {
     var id = req.params.id;
     if (check.string(id)) {
         Simulation.find({_id: id}, function (err, simulations) {
+            if(err){
+                res.status(404).send("Simulation not found");
+            }else{
             if (simulations.length == 1) {
                 var simulation = simulations[0].toObject();
                 insertLocalizations(simulation,function(err){
@@ -88,12 +126,12 @@ exports.get = function (req, res) {
                         res.status(500).send("Error retrieving localizations");
                     }else{
                         simulation.id = simulation._id.toString();
-                        res.status(200).send(JSON.stringify(simulation));
+                        res.status(200).json(simulation);
                     }
                 })
             } else {
                 res.status(404).send("Simulation not found");
-            }
+            }}
         });
     } else {
         res.status(400).send("Bad format");
