@@ -45,6 +45,37 @@ var extractTerritories = function(report,finalCallback){
     });
 };
 
+exports.list = function(req,res){
+    var sendList = function(reportDocs){
+        var reports = [];
+        for(var i = 0;i<reportDocs.length;i++){
+            var report = reportDocs[i].toObject();
+            report.id = report._id;
+            reports.push(report);
+        }
+        async.each(reports,insertTerritories,function(err){
+            if(err){
+                res.status(500).send(err);
+            }else{
+                res.status(200).json(reports);
+            }
+        });
+    };
+
+        if(req.query.creator){
+            console.log("Report by creator request");
+            Report.find({ creator: req.query.creator }).exec(function(err,docs){
+                sendList(docs);
+            });
+        }else{
+            console.log("List report request");
+            Report.find({}).exec(function(err,docs){
+                sendList(docs);
+            });
+    }
+};
+
+
 exports.create = function (req, res) {
     extractTerritories(req.body,function(err){
         if(err){

@@ -2,6 +2,7 @@ var express = require('express'),
     reportsController=require('../controllers/reportsController'),
     router = express.Router();
 
+router.get('/',reportsController.list);
 
 router.post('/',reportsController.create);
 
