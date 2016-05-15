@@ -4,45 +4,53 @@ var check = require('check-types'),
     moment = require('moment'), crypto = require('crypto');
 
 var insertTerritories = function(report,finalCallback){
-    async.each(Object.keys(report.territories),function(territoryName,callback){
-        var path =report.territories[territoryName];
-        if(path){
-            fs.readFile(path,'utf8',function(err,data){
-                if(err){
-                    callback(err);
-                }else{
-                    report.territories[territoryName] = data;
-                    callback();
-                }
-            });
-        }else{
-            callback();
-        }
-    },function(err){
-        finalCallback(err);
-    });
+    if(report.territories){
+        async.each(Object.keys(report.territories),function(territoryName,callback){
+            var path =report.territories[territoryName];
+            if(path){
+                fs.readFile(path,'utf8',function(err,data){
+                    if(err){
+                        callback(err);
+                    }else{
+                        report.territories[territoryName] = data;
+                        callback();
+                    }
+                });
+            }else{
+                callback();
+            }
+        },function(err){
+            finalCallback(err);
+        });
+    }else{
+        finalCallback();
+    }
 };
 
 var extractTerritories = function(report,finalCallback){
-    async.each(Object.keys(report.territories),function(territoryName,callback){
-        var territory = report.territories[territoryName];
-        if(territory){
-            var hash =crypto.createHash('sha256').update(territory).digest('hex');
-            var path = "files/"+hash+".json";
-            fs.writeFile(path, territory, function(err) {
-                if(err) {
-                    callback(err);
-                }else{
-                    report.territories[territoryName] = path;
-                    callback();
-                }
-            });
-        }else{
-            callback();
-        }
-    },function(err){
-        finalCallback(err);
-    });
+    if(report.territories){
+        async.each(Object.keys(report.territories),function(territoryName,callback){
+            var territory = report.territories[territoryName];
+            if(territory){
+                var hash =crypto.createHash('sha256').update(territory).digest('hex');
+                var path = "files/"+hash+".json";
+                fs.writeFile(path, territory, function(err) {
+                    if(err) {
+                        callback(err);
+                    }else{
+                        report.territories[territoryName] = path;
+                        callback();
+                    }
+                });
+            }else{
+                callback();
+            }
+        },function(err){
+            finalCallback(err);
+        });
+    }else{
+        finalCallback();
+    }
 };
 
 exports.list = function(req,res){
