@@ -1,5 +1,5 @@
 var check = require('check-types'),
-    Simulation = require('../models/simulation'),
+    Simulation = require('../models/Simulation'),
     fs = require("fs"), async = require("async"),
     moment = require('moment'), crypto = require('crypto');
 
